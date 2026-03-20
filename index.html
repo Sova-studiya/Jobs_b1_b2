@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Work Activities - Learning Menu</title>
+    <title>Learning Menu</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -36,26 +36,42 @@
             opacity: 0.9;
             font-weight: 400;
         }
+
+        .section-label {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.78em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: -8px;
+            padding-left: 6px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            margin: 6px 0;
+        }
         
         .menu-container {
             width: 100%;
             max-width: 450px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
         
         .menu-card {
             background: white;
             border-radius: 20px;
-            padding: 35px 30px;
+            padding: 28px 26px;
             text-decoration: none;
             color: #333;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
             position: relative;
             overflow: hidden;
         }
@@ -63,26 +79,24 @@
         .menu-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+
+        .menu-card.work::before      { background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1)); }
+        .menu-card.uni::before       { background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.1)); }
+        .menu-card.prefixes::before  { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(217,119,6,0.1)); }
         
         .menu-card:hover, .menu-card:active {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
             box-shadow: 0 15px 50px rgba(0,0,0,0.4);
         }
-        
-        .menu-card:hover::before {
-            opacity: 1;
-        }
+        .menu-card:hover::before { opacity: 1; }
         
         .menu-card .icon {
-            font-size: 3em;
+            font-size: 2.6em;
             flex-shrink: 0;
             z-index: 1;
         }
@@ -93,47 +107,43 @@
         }
         
         .menu-card h3 {
-            font-size: 1.4em;
-            margin-bottom: 8px;
+            font-size: 1.25em;
+            margin-bottom: 5px;
             color: #333;
             font-weight: 700;
         }
         
         .menu-card p {
-            font-size: 0.95em;
+            font-size: 0.88em;
             color: #666;
             line-height: 1.5;
         }
         
         .menu-card .badge {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.8em;
+            padding: 4px 11px;
+            border-radius: 12px;
+            font-size: 0.75em;
             font-weight: 600;
-            margin-top: 10px;
+            margin-top: 8px;
         }
-        
-        .menu-card.quiz .badge {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
+
+        .work    .badge { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .uni     .badge { background: linear-gradient(135deg, #10b981, #059669); }
+        .prefixes .badge { background: linear-gradient(135deg, #f59e0b, #d97706); }
         
         .menu-card .arrow {
-            font-size: 1.5em;
-            color: #667eea;
-            opacity: 0.6;
+            font-size: 1.3em;
+            color: #aaa;
+            opacity: 0.7;
             transition: all 0.3s ease;
+            z-index: 1;
         }
-        
-        .menu-card:hover .arrow {
-            opacity: 1;
-            transform: translateX(5px);
-        }
+        .menu-card:hover .arrow { opacity: 1; transform: translateX(4px); }
         
         .footer {
-            margin-top: 40px;
+            margin-top: 36px;
             text-align: center;
             color: rgba(255,255,255,0.8);
             font-size: 0.9em;
@@ -141,50 +151,85 @@
         
         @media (max-width: 600px) {
             .header h1 { font-size: 1.6em; }
-            .menu-card { padding: 25px 20px; gap: 15px; }
-            .menu-card .icon { font-size: 2.5em; }
-            .menu-card h3 { font-size: 1.2em; }
-            .menu-card p { font-size: 0.9em; }
+            .menu-card { padding: 22px 18px; gap: 14px; }
+            .menu-card .icon { font-size: 2.2em; }
+            .menu-card h3 { font-size: 1.1em; }
+            .menu-card p { font-size: 0.85em; }
         }
         
         @media (min-width: 768px) {
             .header h1 { font-size: 2.4em; }
-            .menu-card { padding: 40px 35px; }
-            .menu-card .icon { font-size: 3.5em; }
-            .menu-card h3 { font-size: 1.6em; }
+            .menu-card { padding: 34px 30px; }
+            .menu-card .icon { font-size: 3em; }
+            .menu-card h3 { font-size: 1.4em; }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>💼 Work Activities</h1>
-        <p>Choose a learning mode to practice B1-B2 vocabulary</p>
+        <h1>📚 English Vocabulary</h1>
+        <p>Choose a topic to start practising</p>
     </div>
     
     <div class="menu-container">
-        <a href="cards.html" class="menu-card">
+
+        <!-- Work Activities -->
+        <div class="section-label">💼 Work Activities</div>
+
+        <a href="cards.html" class="menu-card work">
             <div class="icon">🗂️</div>
             <div class="content">
                 <h3>Flashcards</h3>
-                <p>Review phrases with Russian on front and English on back. Listen to pronunciation and see example sentences.</p>
-                <span class="badge">46 cards • B1-B2 level</span>
+                <p>Russian prompt → English phrase. Listen to pronunciation and see example sentences.</p>
+                <span class="badge">46 cards · B1–B2</span>
             </div>
             <div class="arrow">→</div>
         </a>
         
-        <a href="quiz.html" class="menu-card quiz">
+        <a href="quiz.html" class="menu-card work">
             <div class="icon">📝</div>
             <div class="content">
                 <h3>Quiz Mode</h3>
-                <p>Test yourself! Read A2-level sentences and choose the correct B1-B2 phrase. Mistakes come back for review.</p>
-                <span class="badge">46 questions • A2 context</span>
+                <p>Choose the correct B1–B2 phrase in A2-level context. Mistakes come back for review.</p>
+                <span class="badge">46 questions · A2 context</span>
             </div>
             <div class="arrow">→</div>
         </a>
+
+        <hr class="divider">
+
+        <!-- University Life -->
+        <div class="section-label">🎓 University Life</div>
+
+        <a href="uni-cards.html" class="menu-card uni">
+            <div class="icon">🗂️</div>
+            <div class="content">
+                <h3>Flashcards</h3>
+                <p>Pros and cons of university life. Russian prompt → English phrase with examples.</p>
+                <span class="badge">18 cards · B1–B2</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <hr class="divider">
+
+        <!-- Prefixes -->
+        <div class="section-label">🔤 Prefixes</div>
+
+        <a href="prefixes-cards.html" class="menu-card prefixes">
+            <div class="icon">🗂️</div>
+            <div class="content">
+                <h3>Flashcards</h3>
+                <p>Learn 12 prefixes: meaning, usage rules and example words in context.</p>
+                <span class="badge">12 cards · word formation</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
     </div>
     
     <div class="footer">
-        <p>📚 Professional English Vocabulary</p>
+        <p>Professional English Vocabulary</p>
     </div>
 </body>
 </html>
