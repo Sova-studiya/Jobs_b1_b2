@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prefix Challenge</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f2; --surface: #ffffff; --border: rgba(0,0,0,0.12);
+    --text: #1a1a18; --muted: #6b6a65; --hint: #888780;
+    --green-bg: #EAF3DE; --green-border: #639922; --green-text: #3B6D11;
+    --red-bg: #FCEBEB; --red-border: #E24B4A; --red-text: #A32D2D;
+    --purple-bg: #EEEDFE; --purple-border: #7F77DD; --purple-text: #3C3489;
+    --radius: 10px; --radius-sm: 7px;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex;
+    align-items: flex-start; justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  .wrap { width: 100%; max-width: 640px; }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
+  .title { font-size: 17px; font-weight: 600; }
+  .top-bar-right { display: flex; gap: 8px; align-items: center; }
+  .rule-btn, .back-btn {
+    font-size: 13px; padding: 6px 14px;
+    border: 0.5px solid var(--border); border-radius: 20px;
+    background: var(--surface); color: var(--muted); cursor: pointer;
+    text-decoration: none; display: inline-block;
+  }
+  .rule-btn:hover, .back-btn:hover { background: #f0efeb; }
+  .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px; text-align: center;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+  .stat-val.pos { color: var(--green-text); }
+  .stat-val.neg { color: var(--red-text); }
+  .progress-bar-wrap { background: #e8e7e2; border-radius: 4px; height: 6px; margin-bottom: 10px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--purple-border); transition: width 0.3s; }
+  .target-note { font-size: 12px; color: var(--muted); text-align: right; margin-bottom: 16px; }
+  .card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 24px 24px 20px; margin-bottom: 14px;
+  }
+  .q-num { font-size: 12px; color: var(--hint); margin-bottom: 10px; }
+  .q-sentence { font-size: 19px; line-height: 1.55; font-weight: 500; margin-bottom: 8px; }
+  .q-blank { color: #b4b2a9; }
+  .q-tr { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .choices { display: flex; flex-wrap: wrap; gap: 10px; }
+  .choice-btn {
+    flex: 1 1 calc(50% - 5px); min-width: 120px;
+    padding: 11px 16px; font-size: 15px; font-weight: 500;
+    border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); cursor: pointer;
+    transition: background 0.12s; text-align: center;
+  }
+  .choice-btn:hover:not(:disabled) { background: #eeedea; border-color: rgba(0,0,0,0.22); }
+  .choice-btn.correct { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
+  .choice-btn.wrong   { background: var(--red-bg);   border-color: var(--red-border);   color: var(--red-text); }
+  .choice-btn:disabled { cursor: default; opacity: .85; }
+  .feedback { margin-top: 16px; font-size: 14px; font-weight: 500; min-height: 40px; display: flex; flex-direction: column; gap: 6px; }
+  .fb-main.ok { color: var(--green-text); }
+  .fb-main.no { color: var(--red-text); }
+  .fb-hint { font-size: 13px; color: var(--muted); font-weight: 400; }
+  .next-btn {
+    width: 100%; padding: 13px; font-size: 15px; font-weight: 500;
+    border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); cursor: pointer;
+    display: none; margin-top: 4px;
+  }
+  .next-btn:hover { background: #f0efeb; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.38); z-index: 100;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius);
+    max-width: 500px; width: 100%; max-height: 85vh;
+    overflow-y: auto; padding: 24px;
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 600; margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-close { font-size: 20px; cursor: pointer; color: var(--muted); background: none; border: none; line-height: 1; }
+  .prefix-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .prefix-table th {
+    text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--muted); padding: 0 8px 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .prefix-table td { padding: 9px 8px 9px 0; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+  .px-tag {
+    display: inline-block; background: var(--purple-bg); color: var(--purple-text);
+    padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;
+  }
+  .end-screen { display: none; text-align: center; padding: 32px 16px; }
+  .end-screen.show { display: block; }
+  .end-big { font-size: 52px; font-weight: 700; line-height: 1; }
+  .end-sub { font-size: 16px; color: var(--muted); margin: 10px 0 6px; }
+  .end-msg { font-size: 18px; font-weight: 600; margin: 0 0 24px; }
+  .end-msg.pass { color: var(--green-text); }
+  .end-msg.fail { color: var(--red-text); }
+  .end-detail { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.8; }
+  .end-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .restart-btn, .menu-btn {
+    padding: 12px 32px; font-size: 15px; font-weight: 500;
+    border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); cursor: pointer;
+    text-decoration: none; display: inline-block;
+  }
+  .restart-btn:hover, .menu-btn:hover { background: #f0efeb; }
+  @media (max-width: 480px) {
+    .q-sentence { font-size: 17px; }
+    .choice-btn { flex: 1 1 100%; }
+    .card { padding: 18px 16px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">
+        Prefix meanings
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <table class="prefix-table">
+        <thead><tr><th>Prefix</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><span class="px-tag">co-</span></td><td>with, together</td><td>co-operate</td></tr>
+          <tr><td><span class="px-tag">ex-</span></td><td>former</td><td>ex-wife</td></tr>
+          <tr><td><span class="px-tag">mini-</span></td><td>small</td><td>minibus</td></tr>
+          <tr><td><span class="px-tag">micro-</span></td><td>extremely small</td><td>microchip</td></tr>
+          <tr><td><span class="px-tag">mis-</span></td><td>wrongly, badly</td><td>misunderstand</td></tr>
+          <tr><td><span class="px-tag">multi-</span></td><td>many</td><td>multicoloured</td></tr>
+          <tr><td><span class="px-tag">over-</span></td><td>too much</td><td>overcooked</td></tr>
+          <tr><td><span class="px-tag">post-</span></td><td>after</td><td>post-war</td></tr>
+          <tr><td><span class="px-tag">re-</span></td><td>again</td><td>rewrite</td></tr>
+          <tr><td><span class="px-tag">semi-</span></td><td>half, partly</td><td>semicircle</td></tr>
+          <tr><td><span class="px-tag">under-</span></td><td>too little, below</td><td>undercooked</td></tr>
+          <tr><td><span class="px-tag">sub-</span></td><td>under, below</td><td>submarine</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <div class="title">Prefix Challenge</div>
+    <div class="top-bar-right">
+      <button class="rule-btn" onclick="openModal()">📋 Prefix rules</button>
+      <a href="index.html" class="back-btn">← Menu</a>
+    </div>
+  </div>
+
+  <div id="game-section">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-val pos" id="disp-score">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Question</div>
+        <div class="stat-val" id="disp-q">1 / 50</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Correct</div>
+        <div class="stat-val" id="disp-correct">0</div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="prog" style="width:2%"></div>
+    </div>
+    <div class="target-note">Target: 35 pts &nbsp;·&nbsp; +3 correct &nbsp;·&nbsp; −4 wrong</div>
+
+    <div class="card">
+      <div class="q-num" id="q-num">Question 1</div>
+      <div class="q-sentence" id="q-sent"></div>
+      <div class="q-tr" id="q-tr"></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="fb"></div>
+    </div>
+    <button class="next-btn" id="nxt-btn" onclick="nextQ()">Next question →</button>
+  </div>
+
+  <div class="end-screen" id="end-screen">
+    <div class="end-big" id="end-score"></div>
+    <div class="end-sub">out of 150 possible points</div>
+    <div class="end-msg" id="end-msg"></div>
+    <div class="end-detail" id="end-detail"></div>
+    <div class="end-btns">
+      <button class="restart-btn" onclick="restart()">Play again</button>
+      <a href="index.html" class="menu-btn">← Menu</a>
+    </div>
+  </div>
+
+</div>
+<script>
+const ALL_Q = [
+  { s:"The two schools decided to ___operate on the science project.", tr:"Две школы решили работать над научным проектом вместе.", a:"co", c:["co","mis","re","over"], h:"co- = with / together → co-operate" },
+  { s:"She is the ___author of the book — she wrote it with a friend.", tr:"Она соавтор книги — написала её вместе с подругой.", a:"co", c:["co","re","mis","sub"], h:"co- = together → co-author" },
+  { s:"The ___pilot sat next to the captain during the flight.", tr:"Второй пилот сидел рядом с капитаном во время полёта.", a:"co", c:["co","re","over","post"], h:"co- = together → co-pilot" },
+  { s:"Different cultures ___exist peacefully in this city.", tr:"Разные культуры мирно сосуществуют в этом городе.", a:"co", c:["co","re","over","mis"], h:"co- = together → co-exist" },
+  { s:"His ___wife still lives in the same town.", tr:"Его бывшая жена до сих пор живёт в том же городе.", a:"ex", c:["ex","re","co","over"], h:"ex- = former → ex-wife" },
+  { s:"I met my ___boss at the supermarket yesterday.", tr:"Вчера я встретил своего бывшего начальника в супермаркете.", a:"ex", c:["ex","re","co","mis"], h:"ex- = former → ex-boss" },
+  { s:"The ___president gave a speech at the opening ceremony.", tr:"Бывший президент выступил с речью на церемонии открытия.", a:"ex", c:["ex","re","over","sub"], h:"ex- = former → ex-president" },
+  { s:"He still has photos of his ___girlfriend on his phone.", tr:"У него на телефоне до сих пор есть фото бывшей девушки.", a:"ex", c:["ex","re","mis","post"], h:"ex- = former → ex-girlfriend" },
+  { s:"We rented a ___bus for the school trip.", tr:"Мы арендовали микроавтобус для школьной поездки.", a:"mini", c:["mini","over","re","sub"], h:"mini- = small → minibus" },
+  { s:"There is a ___market at the end of our street.", tr:"В конце нашей улицы есть маленький магазин.", a:"mini", c:["mini","micro","re","sub"], h:"mini- = small → minimarket" },
+  { s:"She wore a ___skirt and boots to the party.", tr:"Она пришла на вечеринку в мини-юбке и сапогах.", a:"mini", c:["mini","re","over","mis"], h:"mini- = small → miniskirt" },
+  { s:"The kids played ___golf at the seaside.", tr:"Дети играли в мини-гольф у моря.", a:"mini", c:["mini","micro","sub","re"], h:"mini- = small → minigolf" },
+  { s:"The tiny ___chip inside the card stores all your data.", tr:"Маленький микрочип внутри карты хранит все ваши данные.", a:"micro", c:["micro","mini","re","over"], h:"micro- = extremely small → microchip" },
+  { s:"Heat the soup in the ___wave for two minutes.", tr:"Разогрей суп в микроволновке две минуты.", a:"micro", c:["micro","mini","over","re"], h:"micro- = extremely small → microwave" },
+  { s:"We looked at the leaf cells through a ___scope.", tr:"Мы рассматривали клетки листа через микроскоп.", a:"micro", c:["micro","mini","over","sub"], h:"micro- = extremely small → microscope" },
+  { s:"Please speak into the ___phone so everyone can hear you.", tr:"Пожалуйста, говорите в микрофон, чтобы все слышали.", a:"micro", c:["micro","mini","re","mis"], h:"micro- = extremely small → microphone" },
+  { s:"Sorry, I think I ___understood you — can you say that again?", tr:"Прости, кажется, я неправильно тебя понял — можешь повторить?", a:"mis", c:["mis","re","over","co"], h:"mis- = wrongly → misunderstand" },
+  { s:"She ___spelled the teacher's name in her essay.", tr:"Она написала имя учителя с ошибкой в своём сочинении.", a:"mis", c:["mis","re","over","co"], h:"mis- = wrongly → misspell" },
+  { s:"I always ___place my keys — I can never find them!", tr:"Я всегда кладу ключи не туда — никогда не могу их найти!", a:"mis", c:["mis","over","sub","post"], h:"mis- = wrongly → misplace" },
+  { s:"He ___read the instructions and built the shelf wrong.", tr:"Он неправильно прочитал инструкцию и собрал полку неверно.", a:"mis", c:["mis","over","co","sub"], h:"mis- = wrongly → misread" },
+  { s:"Some children ___behave when the teacher leaves the room.", tr:"Некоторые дети плохо ведут себя, когда учитель выходит.", a:"mis", c:["mis","re","over","co"], h:"mis- = badly → misbehave" },
+  { s:"They live in a ___storey building in the city centre.", tr:"Они живут в многоэтажном доме в центре города.", a:"multi", c:["multi","mini","over","re"], h:"multi- = many → multi-storey" },
+  { s:"The ___coloured kite flew high above the beach.", tr:"Разноцветный воздушный змей летел высоко над пляжем.", a:"multi", c:["multi","mini","re","sub"], h:"multi- = many → multicoloured" },
+  { s:"London is a very ___cultural city with people from all over the world.", tr:"Лондон — очень многокультурный город, люди приехали со всего мира.", a:"multi", c:["multi","mini","re","sub"], h:"multi- = many → multicultural" },
+  { s:"She works for a large ___national company with offices in 30 countries.", tr:"Она работает в крупной многонациональной компании с офисами в 30 странах.", a:"multi", c:["multi","mini","over","re"], h:"multi- = many → multinational" },
+  { s:"It is a ___purpose hall — we use it for sports, concerts and exams.", tr:"Это многофункциональный зал — используем для спорта, концертов и экзаменов.", a:"multi", c:["multi","over","sub","mini"], h:"multi- = many → multipurpose" },
+  { s:"The pasta is ___cooked — it is completely soft and falling apart.", tr:"Паста переварена — она совсем мягкая и разваливается.", a:"over", c:["over","mis","re","co"], h:"over- = too much → overcooked" },
+  { s:"I ___slept this morning and missed the first lesson.", tr:"Сегодня утром я проспал и пропустил первый урок.", a:"over", c:["over","mis","re","co"], h:"over- = too much → oversleep" },
+  { s:"Don't ___work yourself — you need to take breaks.", tr:"Не перегружай себя — тебе нужно делать перерывы.", a:"over", c:["over","mis","post","ex"], h:"over- = too much → overwork" },
+  { s:"Your suitcase is ___weight — please take some things out.", tr:"Твой чемодан перевешивает — пожалуйста, вытащи что-нибудь.", a:"over", c:["over","mis","re","co"], h:"over- = too much → overweight" },
+  { s:"The shop ___charged me — I paid £5 too much.", tr:"В магазине с меня взяли лишнего — я заплатил на 5 фунтов больше.", a:"over", c:["over","co","sub","post"], h:"over- = too much → overcharge" },
+  { s:"The film is set in ___war Europe and shows how people rebuilt their lives.", tr:"Фильм происходит в послевоенной Европе и рассказывает, как люди восстанавливали жизнь.", a:"post", c:["post","re","co","over"], h:"post- = after → post-war" },
+  { s:"The ___match interview showed how tired the players were.", tr:"Послематчевое интервью показало, как устали игроки.", a:"post", c:["post","over","sub","ex"], h:"post- = after → post-match" },
+  { s:"She is looking for a job in her ___graduation year.", tr:"В год после окончания учёбы она ищет работу.", a:"post", c:["post","re","co","over"], h:"post- = after → post-graduation" },
+  { s:"The team had a great ___season tournament and won the cup.", tr:"Команда хорошо сыграла в послесезонном турнире и выиграла кубок.", a:"post", c:["post","mis","co","over"], h:"post- = after → post-season" },
+  { s:"Your essay has too many mistakes — please ___write it.", tr:"В твоём сочинении слишком много ошибок — пожалуйста, перепиши его.", a:"re", c:["re","sub","post","ex"], h:"re- = again → rewrite" },
+  { s:"I never got your email — can you ___send it?", tr:"Я не получил твоё письмо — можешь отправить ещё раз?", a:"re", c:["re","mis","co","over"], h:"re- = again → resend" },
+  { s:"The book was so good that I decided to ___read it.", tr:"Книга была такой хорошей, что я решил перечитать её.", a:"re", c:["re","over","sub","co"], h:"re- = again → reread" },
+  { s:"They decided to ___paint the kitchen a brighter colour.", tr:"Они решили перекрасить кухню в более яркий цвет.", a:"re", c:["re","mis","over","sub"], h:"re- = again → repaint" },
+  { s:"The café will ___open next Monday after the renovation.", tr:"Кафе снова откроется в следующий понедельник после ремонта.", a:"re", c:["re","mis","over","co"], h:"re- = again → reopen" },
+  { s:"Draw a ___circle — just the top half of the round shape.", tr:"Нарисуй полукруг — только верхнюю половину круга.", a:"semi", c:["semi","mini","re","over"], h:"semi- = half → semicircle" },
+  { s:"We won the ___final, so now we play in the final next week!", tr:"Мы выиграли полуфинал, теперь играем в финале на следующей неделе!", a:"semi", c:["semi","mini","re","over"], h:"semi- = half → semi-final" },
+  { s:"They live in a ___detached house — it shares one wall with the neighbours.", tr:"Они живут в доме на два хозяина — один общий с соседями.", a:"semi", c:["semi","mini","re","co"], h:"semi- = half → semi-detached" },
+  { s:"The room was ___dark — we could just make out the shapes of the furniture.", tr:"В комнате было полутемно — мы едва различали очертания мебели.", a:"semi", c:["semi","mini","re","mis"], h:"semi- = half, partly → semi-dark" },
+  { s:"The chicken is ___cooked — put it back in the oven for ten more minutes.", tr:"Курица не прожарена — верни её в духовку ещё на десять минут.", a:"under", c:["under","mis","re","co"], h:"under- = too little → undercooked" },
+  { s:"The workers complained that they were ___paid for their long hours.", tr:"Работники жаловались, что им платят слишком мало за долгие часы.", a:"under", c:["under","mis","re","co"], h:"under- = too little → underpaid" },
+  { s:"Don't ___estimate the test — it is harder than it looks.", tr:"Не недооценивай тест — он сложнее, чем кажется.", a:"under", c:["under","mis","re","co"], h:"under- = too little → underestimate" },
+  { s:"Please ___line the key words in the text.", tr:"Пожалуйста, подчеркни ключевые слова в тексте.", a:"under", c:["under","over","mis","re"], h:"under- = below → underline" },
+  { s:"He could not buy the ticket because he was ___age.", tr:"Он не смог купить билет, потому что был несовершеннолетним.", a:"under", c:["under","mis","re","co"], h:"under- = below → underage" },
+  { s:"The sailors travelled for weeks inside the ___marine.", tr:"Моряки провели несколько недель внутри подводной лодки.", a:"sub", c:["sub","over","re","mis"], h:"sub- = under → submarine" },
+  { s:"Take the ___way — it is the fastest route across the city.", tr:"Езжай на метро — это самый быстрый маршрут через город.", a:"sub", c:["sub","over","re","mis"], h:"sub- = under → subway" },
+  { s:"I always watch foreign films with ___titles.", tr:"Я всегда смотрю иностранные фильмы с субтитрами.", a:"sub", c:["sub","over","mis","co"], h:"sub- = under → subtitle" },
+  { s:"Tonight the temperature will drop to ___zero — remember your coat!", tr:"Сегодня ночью температура опустится ниже нуля — не забудь пальто!", a:"sub", c:["sub","over","re","mis"], h:"sub- = below → sub-zero" },
+  { s:"The rocks ___merge completely when the tide comes in.", tr:"Скалы полностью уходят под воду, когда приходит прилив.", a:"sub", c:["sub","over","mis","co"], h:"sub- = under → submerge" },
+  { s:"Don't ___load the washing machine — it breaks if you put too much in.", tr:"Не перегружай стиральную машину — она ломается от слишком большой загрузки.", a:"over", c:["over","mis","co","sub"], h:"over- = too much → overload" },
+  { s:"She ___counted the money and gave the wrong change.", tr:"Она неправильно посчитала деньги и дала неверную сдачу.", a:"mis", c:["mis","over","co","post"], h:"mis- = wrongly → miscount" },
+  { s:"After the fire they had to ___build the whole house.", tr:"После пожара им пришлось отстроить весь дом заново.", a:"re", c:["re","mis","co","post"], h:"re- = again → rebuild" },
+  { s:"He is a ___professional footballer — he plays for money but not in the top league.", tr:"Он полупрофессиональный футболист — играет за деньги, но не в высшей лиге.", a:"semi", c:["semi","mini","re","over"], h:"semi- = partly → semi-professional" },
+  { s:"She ___founded the company together with her university friend.", tr:"Она вместе с другом по университету стала соучредителем компании.", a:"co", c:["co","mis","over","re"], h:"co- = together → co-found" },
+];
+
+let questions = [], idx = 0, score = 0, correct = 0, answered = false;
+const shuffle = a => a.slice().sort(() => Math.random() - 0.5);
+
+function init() {
+  questions = shuffle(ALL_Q).slice(0, 50);
+  idx = 0; score = 0; correct = 0; answered = false;
+  document.getElementById('end-screen').classList.remove('show');
+  document.getElementById('game-section').style.display = 'block';
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[idx];
+  document.getElementById('q-num').textContent = 'Question ' + (idx + 1);
+  document.getElementById('disp-q').textContent = (idx + 1) + ' / 50';
+  document.getElementById('prog').style.width = Math.max(2, (idx / 50) * 100) + '%';
+  updateScore();
+  document.getElementById('q-sent').innerHTML = q.s.replace('___', '<span class="q-blank">___</span>');
+  document.getElementById('q-tr').textContent = q.tr;
+  const ch = document.getElementById('choices');
+  ch.innerHTML = '';
+  shuffle(q.c).forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = v + '-';
+    b.onclick = () => pick(v, b, q);
+    ch.appendChild(b);
+  });
+  document.getElementById('fb').innerHTML = '';
+  document.getElementById('nxt-btn').style.display = 'none';
+  answered = false;
+}
+
+function pick(choice, btn, q) {
+  if (answered) return;
+  answered = true;
+  const ok = choice === q.a;
+  if (ok) { score += 3; correct++; } else { score -= 4; }
+  updateScore();
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    const v = b.textContent.replace('-','');
+    if (v === q.a) b.classList.add('correct');
+    else if (b === btn && !ok) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('fb');
+  fb.innerHTML = ok
+    ? `<span class="fb-main ok">+3 points ✓</span><span class="fb-hint">${q.h}</span>`
+    : `<span class="fb-main no">−4 points ✗ &nbsp; Answer: <strong>${q.a}-</strong></span><span class="fb-hint">${q.h}</span>`;
+  document.getElementById('nxt-btn').style.display = 'block';
+}
+
+function updateScore() {
+  const el = document.getElementById('disp-score');
+  el.textContent = score;
+  el.className = 'stat-val ' + (score >= 0 ? 'pos' : 'neg');
+  document.getElementById('disp-correct').textContent = correct;
+}
+
+function nextQ() {
+  idx++;
+  if (idx >= 50) { showEnd(); return; }
+  renderQ();
+}
+
+function showEnd() {
+  document.getElementById('game-section').style.display = 'none';
+  const end = document.getElementById('end-screen');
+  end.classList.add('show');
+  document.getElementById('end-score').textContent = score;
+  const pass = score >= 35;
+  const msgEl = document.getElementById('end-msg');
+  msgEl.textContent = pass ? '🎉 Target reached! Well done!' : "📚 Keep practising — you'll get there!";
+  msgEl.className = 'end-msg ' + (pass ? 'pass' : 'fail');
+  const wrong = 50 - correct;
+  document.getElementById('end-detail').innerHTML =
+    `Correct answers: ${correct} &nbsp;(+${correct * 3} pts)<br>
+     Wrong answers: ${wrong} &nbsp;(−${wrong * 4} pts)<br>
+     Target: 35 points`;
+}
+
+function restart() { init(); }
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+init();
+</script>
+</body>
+</html>

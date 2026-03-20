@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Life - B1/B2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 25px;
+            border-radius: 25px;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 600px;
+            height: 500px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card.flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .russian-text {
+            font-size: 2.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .english-text {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .collocations {
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .collocations-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 12px;
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+            padding-bottom: 8px;
+        }
+
+        .collocation-item {
+            margin: 10px 0;
+            font-style: italic;
+            line-height: 1.5;
+            font-size: 1em;
+        }
+
+        .audio-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px;
+        }
+
+        .audio-btn:hover { background: #764ba2; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+        .audio-btn.back-btn { background: white; color: #667eea; }
+        .audio-btn.back-btn:hover { background: #f0f0f0; }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .control-btn:active { transform: translateY(-1px); }
+
+        .control-btn.secondary { background: rgba(255,255,255,0.2); color: white; }
+        .control-btn.secondary:hover { background: rgba(255,255,255,0.3); }
+
+        .hint {
+            color: rgba(255,255,255,0.8);
+            margin-top: 20px;
+            font-size: 0.95em;
+            text-align: center;
+        }
+
+        .shuffle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .shuffle-btn:hover { background: white; color: #667eea; }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-home:hover { background: white; color: #667eea; }
+
+        @media (max-width: 768px) {
+            .card-container { height: 450px; }
+            .russian-text { font-size: 1.8em; }
+            .english-text { font-size: 1.6em; }
+            h1 { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎓 University Life</h1>
+    <div class="progress" id="progress">Карточка 1 из 18</div>
+
+    <a href="index.html" class="back-home">← Меню</a>
+    <button class="shuffle-btn" onclick="shuffleCards()">🔀 Перемешать заново</button>
+
+    <div class="card-container" id="cardContainer" onclick="flipCard()">
+        <div class="card" id="card">
+            <div class="card-face card-front">
+                <div class="russian-text" id="russianText">Загрузка...</div>
+                <button class="audio-btn" onclick="event.stopPropagation(); speak(currentItem.english)">
+                    🔊 Произнести
+                </button>
+                <div style="margin-top: 20px; opacity: 0.7;">Нажмите, чтобы перевернуть</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="english-text" id="englishText"></div>
+                <div class="collocations">
+                    <div class="collocations-title">📝 Примеры использования:</div>
+                    <div id="collocationsList"></div>
+                </div>
+                <button class="audio-btn back-btn" onclick="event.stopPropagation(); speak(currentItem.english)">
+                    🔊 Произнести
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn secondary" onclick="prevCard(event)">← Назад</button>
+        <button class="control-btn" onclick="nextCard(event)">Далее →</button>
+    </div>
+
+    <div class="hint">💡 Нажмите на карточку чтобы перевернуть<br>Используйте стрелки ← → на клавиатуре</div>
+
+    <script>
+        const vocabulary = [
+            {
+                russian: "Получать квалификацию",
+                english: "get qualifications",
+                collocations: [
+                    "You can get qualifications at university",
+                    "She got qualifications in business",
+                    "Getting qualifications helps you find a better job"
+                ]
+            },
+            {
+                russian: "Зарабатывать деньги",
+                english: "earn money",
+                collocations: [
+                    "Students often work part-time to earn money",
+                    "It's hard to earn money while studying",
+                    "After graduation, you can earn more money"
+                ]
+            },
+            {
+                russian: "Влезть в долги",
+                english: "get into debt",
+                collocations: [
+                    "Many students get into debt paying for tuition",
+                    "It's easy to get into debt at university",
+                    "He got into debt because of student loans"
+                ]
+            },
+            {
+                russian: "Иметь насыщенную социальную жизнь",
+                english: "have a good social life",
+                collocations: [
+                    "University is a great place to have a good social life",
+                    "She has a good social life thanks to her course",
+                    "Having a good social life helps with stress"
+                ]
+            },
+            {
+                russian: "Испытывать давление",
+                english: "feel pressure",
+                collocations: [
+                    "Students often feel pressure during exams",
+                    "I feel pressure to get good grades",
+                    "She feels pressure from her family to succeed"
+                ]
+            },
+            {
+                russian: "Испытывать стресс",
+                english: "get stressed",
+                collocations: [
+                    "Students get stressed before deadlines",
+                    "He gets stressed easily at exam time",
+                    "It's normal to get stressed at university"
+                ]
+            },
+            {
+                russian: "Быть безработным",
+                english: "be unemployed",
+                collocations: [
+                    "Some graduates are unemployed for months",
+                    "He was unemployed after finishing his degree",
+                    "Without qualifications, you may be unemployed longer"
+                ]
+            },
+            {
+                russian: "Хорошо проводить время",
+                english: "have a good time",
+                collocations: [
+                    "Most students have a good time at university",
+                    "She had a good time at the student festival",
+                    "University is not just study — you can have a good time"
+                ]
+            },
+            {
+                russian: "Стать независимым",
+                english: "be independent",
+                collocations: [
+                    "Living away from home helps you be independent",
+                    "University teaches you to be independent",
+                    "She became more independent in her first year"
+                ]
+            },
+            {
+                russian: "Много учиться / узнавать",
+                english: "learn a lot",
+                collocations: [
+                    "You learn a lot in your first year",
+                    "Students learn a lot outside the classroom too",
+                    "I learned a lot about myself at university"
+                ]
+            },
+            {
+                russian: "Получить возможности",
+                english: "gain opportunities",
+                collocations: [
+                    "A degree helps you gain opportunities",
+                    "You gain opportunities to meet interesting people",
+                    "Going abroad helps students gain opportunities"
+                ]
+            },
+            {
+                russian: "Пропустить занятие / лекцию",
+                english: "miss a class",
+                collocations: [
+                    "It's easy to miss a class when you're tired",
+                    "She missed a class because she was ill",
+                    "Don't miss too many classes or you'll fall behind"
+                ]
+            },
+            {
+                russian: "Сдать / провалить экзамен",
+                english: "pass / fail an exam",
+                collocations: [
+                    "You need to pass all your exams to graduate",
+                    "He failed an exam and had to resit it",
+                    "She worked hard and passed every exam"
+                ]
+            },
+            {
+                russian: "Подать заявку на стипендию",
+                english: "apply for a scholarship",
+                collocations: [
+                    "She applied for a scholarship to study abroad",
+                    "You should apply for a scholarship early",
+                    "He got a scholarship to cover his tuition"
+                ]
+            },
+            {
+                russian: "Сменить специальность",
+                english: "change your course",
+                collocations: [
+                    "Some students change their course in the first year",
+                    "She changed her course from law to psychology",
+                    "It's possible to change your course if you're unhappy"
+                ]
+            },
+            {
+                russian: "Уложиться в срок / не успеть",
+                english: "meet / miss a deadline",
+                collocations: [
+                    "It's important to meet every deadline",
+                    "He missed a deadline and lost marks",
+                    "She always meets her deadlines"
+                ]
+            },
+            {
+                russian: "Расширить кругозор",
+                english: "broaden your horizons",
+                collocations: [
+                    "Studying abroad helps you broaden your horizons",
+                    "University is a chance to broaden your horizons",
+                    "Meeting new people can broaden your horizons"
+                ]
+            },
+            {
+                russian: "Совмещать учёбу и работу",
+                english: "balance study and work",
+                collocations: [
+                    "It's hard to balance study and work",
+                    "She manages to balance study and work well",
+                    "Many students struggle to balance study and work"
+                ]
+            }
+        ];
+
+        let shuffledCards = [];
+        let currentIndex = 0;
+        let currentItem = null;
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function shuffleCards() {
+            shuffledCards = shuffleArray(vocabulary);
+            currentIndex = 0;
+            document.getElementById('card').classList.remove('flipped');
+            setTimeout(showCard, 300);
+        }
+
+        function showCard() {
+            currentItem = shuffledCards[currentIndex];
+            document.getElementById('russianText').textContent = currentItem.russian;
+            document.getElementById('englishText').textContent = currentItem.english;
+            document.getElementById('collocationsList').innerHTML =
+                currentItem.collocations.map(c => `<div class="collocation-item">• ${c}</div>`).join('');
+            document.getElementById('progress').textContent = `Карточка ${currentIndex + 1} из ${vocabulary.length}`;
+        }
+
+        function flipCard() {
+            document.getElementById('card').classList.toggle('flipped');
+        }
+
+        function nextCard(e) {
+            if (e) e.stopPropagation();
+            if (currentIndex < shuffledCards.length - 1) {
+                document.getElementById('card').classList.remove('flipped');
+                setTimeout(() => { currentIndex++; showCard(); }, 300);
+            } else {
+                if (confirm('Поздравляем! Вы просмотрели все карточки!\n\nНачать заново?')) shuffleCards();
+            }
+        }
+
+        function prevCard(e) {
+            if (e) e.stopPropagation();
+            if (currentIndex > 0) {
+                document.getElementById('card').classList.remove('flipped');
+                setTimeout(() => { currentIndex--; showCard(); }, 300);
+            }
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US'; u.rate = 0.9;
+                speechSynthesis.speak(u);
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextCard(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); }
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); flipCard(); }
+        });
+
+        shuffleCards();
+    </script>
+</body>
+</html>

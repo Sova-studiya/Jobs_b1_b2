@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefixes - Flashcards</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 25px;
+            border-radius: 25px;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 600px;
+            height: 520px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card.flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 35px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        /* FRONT: показываем приставку */
+        .card-front {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #333;
+        }
+
+        /* BACK: значение + примеры */
+        .card-back {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* Приставка крупно */
+        .prefix-text {
+            font-size: 4em;
+            font-weight: 900;
+            color: #d97706;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .front-label {
+            font-size: 1em;
+            color: #92400e;
+            opacity: 0.7;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        /* Значение на обороте */
+        .meaning-text {
+            font-size: 2.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .meaning-ru {
+            font-size: 1.2em;
+            opacity: 0.85;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        /* Блок с примерами */
+        .examples-box {
+            width: 100%;
+            background: rgba(255,255,255,0.18);
+            padding: 18px 22px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .examples-title {
+            font-size: 1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.4);
+            padding-bottom: 6px;
+            letter-spacing: 0.05em;
+        }
+
+        .example-item {
+            margin: 8px 0;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .example-item strong {
+            font-size: 1.1em;
+            letter-spacing: 0.03em;
+        }
+
+        /* Кнопка озвучки */
+        .audio-btn {
+            border: none;
+            padding: 11px 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.05em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .audio-btn.front { background: #d97706; color: white; }
+        .audio-btn.front:hover { background: #b45309; }
+        .audio-btn.back { background: white; color: #d97706; }
+        .audio-btn.back:hover { background: #fef3c7; }
+
+        /* note об использовании дефиса */
+        .hyphen-note {
+            font-size: 0.85em;
+            opacity: 0.75;
+            margin-top: 6px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .controls {
+            margin-top: 28px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: white;
+            color: #d97706;
+            border: none;
+            padding: 14px 34px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .control-btn.secondary { background: rgba(255,255,255,0.2); color: white; }
+        .control-btn.secondary:hover { background: rgba(255,255,255,0.3); }
+
+        .hint {
+            color: rgba(255,255,255,0.8);
+            margin-top: 18px;
+            font-size: 0.92em;
+            text-align: center;
+        }
+
+        .shuffle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .shuffle-btn:hover { background: white; color: #d97706; }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .back-home:hover { background: white; color: #d97706; }
+
+        @media (max-width: 768px) {
+            .card-container { height: 480px; }
+            .prefix-text { font-size: 3em; }
+            .meaning-text { font-size: 1.8em; }
+            h1 { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🔤 Prefixes</h1>
+    <div class="progress" id="progress">Карточка 1 из 12</div>
+
+    <a href="index.html" class="back-home">← Меню</a>
+    <button class="shuffle-btn" onclick="shuffleCards()">🔀 Перемешать</button>
+
+    <div class="card-container" onclick="flipCard()">
+        <div class="card" id="card">
+
+            <!-- FRONT -->
+            <div class="card-face card-front">
+                <div class="prefix-text" id="prefixText">—</div>
+                <div class="front-label">prefix</div>
+                <button class="audio-btn front" onclick="event.stopPropagation(); speakExamples()">
+                    🔊 Примеры
+                </button>
+                <div style="margin-top: 22px; opacity: 0.6; font-size: 0.95em;">Нажмите, чтобы узнать значение</div>
+            </div>
+
+            <!-- BACK -->
+            <div class="card-face card-back">
+                <div class="meaning-text" id="meaningText">—</div>
+                <div class="meaning-ru" id="meaningRu">—</div>
+                <div class="examples-box">
+                    <div class="examples-title">📖 Примеры слов:</div>
+                    <div id="examplesList"></div>
+                </div>
+                <div class="hyphen-note" id="hyphenNote"></div>
+                <button class="audio-btn back" onclick="event.stopPropagation(); speakExamples()" style="margin-top:10px">
+                    🔊 Произнести примеры
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn secondary" onclick="prevCard(event)">← Назад</button>
+        <button class="control-btn" onclick="nextCard(event)">Далее →</button>
+    </div>
+
+    <div class="hint">💡 Нажмите на карточку чтобы перевернуть<br>Используйте стрелки ← → на клавиатуре</div>
+
+    <script>
+        const prefixes = [
+            {
+                prefix: "co-",
+                meaning: "with",
+                meaningRu: "вместе, совместно",
+                examples: [
+                    { word: "co-operate", sentence: "We need to co-operate to finish the project." },
+                    { word: "co-worker", sentence: "She's my co-worker — we share an office." },
+                    { word: "co-author", sentence: "They were co-authors of the report." }
+                ],
+                hyphenNote: "💡 Usually written with a hyphen: co-operate, co-exist"
+            },
+            {
+                prefix: "ex-",
+                meaning: "former",
+                meaningRu: "бывший",
+                examples: [
+                    { word: "ex-wife", sentence: "He met his ex-wife at the party." },
+                    { word: "ex-president", sentence: "The ex-president gave a speech." },
+                    { word: "ex-colleague", sentence: "She got advice from an ex-colleague." }
+                ],
+                hyphenNote: "💡 Always written with a hyphen when meaning 'former': ex-wife"
+            },
+            {
+                prefix: "mini-",
+                meaning: "small",
+                meaningRu: "маленький, мини-",
+                examples: [
+                    { word: "miniskirt", sentence: "Miniskirts became popular in the 1960s." },
+                    { word: "minibreak", sentence: "We went on a minibreak to Paris." },
+                    { word: "minibus", sentence: "The children travelled by minibus." }
+                ],
+                hyphenNote: "💡 Often written without hyphen: miniskirt, minibus"
+            },
+            {
+                prefix: "micro-",
+                meaning: "extremely small",
+                meaningRu: "очень маленький, микро-",
+                examples: [
+                    { word: "microchip", sentence: "The dog has a microchip under its skin." },
+                    { word: "microwave", sentence: "Heat it in the microwave for two minutes." },
+                    { word: "microscope", sentence: "We looked at the cells under a microscope." }
+                ],
+                hyphenNote: "💡 Usually no hyphen: microchip, microphone"
+            },
+            {
+                prefix: "mis-",
+                meaning: "wrongly",
+                meaningRu: "неправильно, ошибочно",
+                examples: [
+                    { word: "misunderstand", sentence: "Sorry, I misunderstood your question." },
+                    { word: "misspell", sentence: "He misspelled his own name on the form." },
+                    { word: "mislead", sentence: "The advertisement was misleading." }
+                ],
+                hyphenNote: "💡 No hyphen: misunderstand, misspell, mislead"
+            },
+            {
+                prefix: "multi-",
+                meaning: "many",
+                meaningRu: "много, многo-",
+                examples: [
+                    { word: "multicoloured", sentence: "She wore a multicoloured dress." },
+                    { word: "multilingual", sentence: "The app is multilingual — it supports 10 languages." },
+                    { word: "multitask", sentence: "Can you multitask at work?" }
+                ],
+                hyphenNote: "💡 Can be with or without hyphen: multi-storey / multitask"
+            },
+            {
+                prefix: "over-",
+                meaning: "too much",
+                meaningRu: "слишком много, чрезмерно",
+                examples: [
+                    { word: "overcooked", sentence: "The pasta was overcooked and soft." },
+                    { word: "overwork", sentence: "Don't overwork yourself — take a break." },
+                    { word: "overreact", sentence: "He overreacted to some bad news." }
+                ],
+                hyphenNote: "💡 No hyphen: overcooked, overwork, overreact"
+            },
+            {
+                prefix: "post-",
+                meaning: "after",
+                meaningRu: "после, пост-",
+                examples: [
+                    { word: "post-war", sentence: "Post-war Europe needed to be rebuilt." },
+                    { word: "postgraduate", sentence: "She's doing a postgraduate degree." },
+                    { word: "postpone", sentence: "The meeting was postponed until Friday." }
+                ],
+                hyphenNote: "💡 Often hyphenated with proper nouns: post-war, post-Brexit"
+            },
+            {
+                prefix: "re-",
+                meaning: "again",
+                meaningRu: "снова, пере-",
+                examples: [
+                    { word: "rewrite", sentence: "The teacher asked me to rewrite the essay." },
+                    { word: "recycle", sentence: "Always recycle plastic and paper." },
+                    { word: "reconsider", sentence: "Please reconsider your decision." }
+                ],
+                hyphenNote: "💡 No hyphen: rewrite, recycle — but re-enter avoids confusion"
+            },
+            {
+                prefix: "semi-",
+                meaning: "half",
+                meaningRu: "полу-, наполовину",
+                examples: [
+                    { word: "semicircle", sentence: "The seats were arranged in a semicircle." },
+                    { word: "semi-final", sentence: "They reached the semi-final of the cup." },
+                    { word: "semi-detached", sentence: "They live in a semi-detached house." }
+                ],
+                hyphenNote: "💡 Sometimes hyphen, sometimes not: semi-final but semicircle"
+            },
+            {
+                prefix: "under-",
+                meaning: "too little",
+                meaningRu: "недостаточно, недо-",
+                examples: [
+                    { word: "undercooked", sentence: "The chicken was undercooked — dangerous!" },
+                    { word: "underestimate", sentence: "Don't underestimate how hard this test is." },
+                    { word: "underpaid", sentence: "Many teachers feel underpaid." }
+                ],
+                hyphenNote: "💡 No hyphen: undercooked, underestimate, underpaid"
+            },
+            {
+                prefix: "sub-",
+                meaning: "under",
+                meaningRu: "под-, суб-",
+                examples: [
+                    { word: "submarine", sentence: "A submarine can travel deep under the sea." },
+                    { word: "subway", sentence: "Take the subway — it's faster." },
+                    { word: "subtitle", sentence: "I watch films with subtitles." }
+                ],
+                hyphenNote: "💡 No hyphen: submarine, subway, subtitle"
+            }
+        ];
+
+        let shuffled = [], currentIndex = 0, currentItem = null;
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function shuffleCards() {
+            shuffled = shuffleArray(prefixes);
+            currentIndex = 0;
+            document.getElementById('card').classList.remove('flipped');
+            setTimeout(showCard, 300);
+        }
+
+        function showCard() {
+            currentItem = shuffled[currentIndex];
+            document.getElementById('prefixText').textContent = currentItem.prefix;
+            document.getElementById('meaningText').textContent = currentItem.meaning;
+            document.getElementById('meaningRu').textContent = currentItem.meaningRu;
+            document.getElementById('hyphenNote').textContent = currentItem.hyphenNote;
+            document.getElementById('examplesList').innerHTML = currentItem.examples
+                .map(e => `<div class="example-item">• <strong>${e.word}</strong> — ${e.sentence}</div>`)
+                .join('');
+            document.getElementById('progress').textContent = `Карточка ${currentIndex + 1} из ${prefixes.length}`;
+        }
+
+        function flipCard() {
+            document.getElementById('card').classList.toggle('flipped');
+        }
+
+        function nextCard(e) {
+            if (e) e.stopPropagation();
+            if (currentIndex < shuffled.length - 1) {
+                document.getElementById('card').classList.remove('flipped');
+                setTimeout(() => { currentIndex++; showCard(); }, 300);
+            } else {
+                if (confirm('Поздравляем! Вы просмотрели все карточки!\n\nНачать заново?')) shuffleCards();
+            }
+        }
+
+        function prevCard(e) {
+            if (e) e.stopPropagation();
+            if (currentIndex > 0) {
+                document.getElementById('card').classList.remove('flipped');
+                setTimeout(() => { currentIndex--; showCard(); }, 300);
+            }
+        }
+
+        function speakExamples() {
+            if (!('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+            const words = currentItem.examples.map(e => e.word).join(', ');
+            const u = new SpeechSynthesisUtterance(words);
+            u.lang = 'en-US'; u.rate = 0.85;
+            speechSynthesis.speak(u);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextCard(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); }
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); flipCard(); }
+        });
+
+        shuffleCards();
+    </script>
+</body>
+</html>
