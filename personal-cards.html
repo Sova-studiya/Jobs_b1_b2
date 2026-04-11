@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Qualities - Flashcards</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 25px;
+            border-radius: 25px;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 600px;
+            height: 520px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card.flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 35px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            color: #333;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .russian-text {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .english-text {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* prefix highlight */
+        .px { text-decoration: underline; font-style: italic; }
+
+        .opposite-box {
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .opposite-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .opposite-word {
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .examples-box {
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .examples-title {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.4);
+            padding-bottom: 5px;
+        }
+
+        .example-item {
+            margin: 7px 0;
+            font-size: 0.95em;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .audio-btn {
+            border: none;
+            padding: 11px 26px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.05em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .audio-btn.front { background: #dc2626; color: white; }
+        .audio-btn.front:hover { background: #b91c1c; }
+        .audio-btn.back { background: white; color: #dc2626; }
+        .audio-btn.back:hover { background: #fef2f2; }
+
+        .controls {
+            margin-top: 28px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: white;
+            color: #dc2626;
+            border: none;
+            padding: 14px 34px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .control-btn.secondary { background: rgba(255,255,255,0.2); color: white; }
+        .control-btn.secondary:hover { background: rgba(255,255,255,0.3); }
+
+        .hint {
+            color: rgba(255,255,255,0.8);
+            margin-top: 18px;
+            font-size: 0.92em;
+            text-align: center;
+        }
+
+        .shuffle-btn {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2); color: white;
+            border: 2px solid white; padding: 10px 20px;
+            border-radius: 25px; cursor: pointer; font-size: 1em;
+            transition: all 0.3s;
+        }
+        .shuffle-btn:hover { background: white; color: #dc2626; }
+
+        .back-home {
+            position: fixed; top: 20px; left: 20px;
+            background: rgba(255,255,255,0.2); color: white;
+            border: 2px solid white; padding: 10px 20px;
+            border-radius: 25px; cursor: pointer; font-size: 1em;
+            text-decoration: none; transition: all 0.3s;
+        }
+        .back-home:hover { background: white; color: #dc2626; }
+
+        @media (max-width: 768px) {
+            .card-container { height: 500px; }
+            .russian-text { font-size: 1.7em; }
+            .english-text { font-size: 1.7em; }
+            h1 { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🧑‍💼 Personal Qualities</h1>
+    <div class="progress" id="progress">Карточка 1 из 16</div>
+
+    <a href="index.html" class="back-home">← Меню</a>
+    <button class="shuffle-btn" onclick="shuffleCards()">🔀 Перемешать</button>
+
+    <div class="card-container" onclick="flipCard()">
+        <div class="card" id="card">
+            <div class="card-face card-front">
+                <div class="russian-text" id="russianText">Загрузка...</div>
+                <button class="audio-btn front" onclick="event.stopPropagation(); speakWord()">
+                    🔊 Произнести
+                </button>
+                <div style="margin-top: 22px; opacity: 0.6; font-size: 0.95em;">Нажмите, чтобы перевернуть</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="english-text" id="englishText"></div>
+                <div class="opposite-box">
+                    <div class="opposite-label">⟷ opposite</div>
+                    <div class="opposite-word" id="oppositeText"></div>
+                </div>
+                <div class="examples-box">
+                    <div class="examples-title">📝 Examples:</div>
+                    <div id="examplesList"></div>
+                </div>
+                <button class="audio-btn back" onclick="event.stopPropagation(); speakWord()">
+                    🔊 Произнести
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn secondary" onclick="prevCard(event)">← Назад</button>
+        <button class="control-btn" onclick="nextCard(event)">Далее →</button>
+    </div>
+
+    <div class="hint">💡 Нажмите на карточку чтобы перевернуть<br>Используйте стрелки ← → на клавиатуре</div>
+
+    <script>
+        const vocabulary = [
+            {
+                russian: "Энтузиастичный, увлечённый",
+                english: "enthusiastic",
+                opposite: "unenthusiastic",
+                examples: [
+                    "She is enthusiastic about her new job.",
+                    "An enthusiastic worker gets more done.",
+                    "The teacher was enthusiastic about the project."
+                ]
+            },
+            {
+                russian: "Гибкий, готовый меняться",
+                english: "flexible",
+                opposite: "inflexible",
+                examples: [
+                    "You need to be flexible with your working hours.",
+                    "A flexible employee can do many different tasks.",
+                    "The shop needs someone flexible for weekends."
+                ]
+            },
+            {
+                russian: "Дружелюбный",
+                english: "friendly",
+                opposite: "unfriendly",
+                examples: [
+                    "A sales assistant must be friendly with customers.",
+                    "She has a friendly personality — everyone likes her.",
+                    "Be friendly and smile when you meet clients."
+                ]
+            },
+            {
+                russian: "Умеющий общаться",
+                english: "good at communicating",
+                opposite: "bad at communicating",
+                examples: [
+                    "A manager must be good at communicating.",
+                    "She's good at communicating ideas clearly.",
+                    "Being good at communicating helps in any job."
+                ]
+            },
+            {
+                russian: "Трудолюбивый, усердный",
+                english: "hard-working",
+                opposite: "lazy",
+                examples: [
+                    "Fruit-pickers need to be hard-working.",
+                    "She's very hard-working — she never takes breaks.",
+                    "Employers want hard-working candidates."
+                ]
+            },
+            {
+                russian: "Честный",
+                english: "honest",
+                opposite: "dishonest",
+                examples: [
+                    "It's important to be honest with your manager.",
+                    "An honest employee never steals from the shop.",
+                    "Always be honest in a job interview."
+                ]
+            },
+            {
+                russian: "Терпеливый",
+                english: "patient",
+                opposite: "impatient",
+                examples: [
+                    "You need to be patient when working with customers.",
+                    "A dish-washer must be patient in a busy kitchen.",
+                    "Be patient — the manager will see you soon."
+                ]
+            },
+            {
+                russian: "Физически здоровый, в форме",
+                english: "physically fit",
+                opposite: "physically unfit",
+                examples: [
+                    "Fruit-pickers must be physically fit.",
+                    "The job requires you to be physically fit.",
+                    "She stays physically fit by cycling to work."
+                ]
+            },
+            {
+                russian: "Надёжный",
+                english: "reliable",
+                opposite: "unreliable",
+                examples: [
+                    "We need a reliable person who always comes on time.",
+                    "She's reliable — she has never missed a shift.",
+                    "Employers value reliable workers."
+                ]
+            },
+            {
+                russian: "Уверенный в себе",
+                english: "confident",
+                opposite: "unconfident / not confident",
+                examples: [
+                    "A sales assistant should be confident.",
+                    "She feels confident speaking to customers.",
+                    "Be confident in your job interview."
+                ]
+            },
+            {
+                russian: "Организованный",
+                english: "organised",
+                opposite: "disorganised",
+                examples: [
+                    "A good manager is always organised.",
+                    "She's very organised — she never loses anything.",
+                    "You need to be organised to meet deadlines."
+                ]
+            },
+            {
+                russian: "Общительный, открытый",
+                english: "outgoing",
+                opposite: "shy / reserved",
+                examples: [
+                    "An outgoing person enjoys meeting new people.",
+                    "The job suits an outgoing personality.",
+                    "She's outgoing and loves talking to customers."
+                ]
+            },
+            {
+                russian: "Пунктуальный",
+                english: "punctual",
+                opposite: "unpunctual",
+                examples: [
+                    "Always be punctual — don't be late for your shift.",
+                    "She's punctual — she arrives five minutes early.",
+                    "Employers expect you to be punctual."
+                ]
+            },
+            {
+                russian: "Чуткий, внимательный к другим",
+                english: "sensitive",
+                opposite: "insensitive",
+                examples: [
+                    "Be sensitive to customers' needs.",
+                    "A good teacher is sensitive to students' feelings.",
+                    "She's sensitive — she always notices when people are upset."
+                ]
+            },
+            {
+                russian: "Нечестный (с приставкой)",
+                english: "dishonest",
+                opposite: "honest",
+                examples: [
+                    "A dishonest employee can damage the company.",
+                    "It's dishonest to hide mistakes from your boss.",
+                    "Don't be dishonest in your CV."
+                ]
+            },
+            {
+                russian: "Негибкий, упрямый (с приставкой)",
+                english: "inflexible",
+                opposite: "flexible",
+                examples: [
+                    "An inflexible worker refuses to change schedules.",
+                    "Being inflexible makes teamwork harder.",
+                    "The manager was inflexible about the rules."
+                ]
+            }
+        ];
+
+        let shuffled = [], currentIndex = 0, currentItem = null;
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function shuffleCards() {
+            shuffled = shuffleArray(vocabulary);
+            currentIndex = 0;
+            document.getElementById('card').classList.remove('flipped');
+            setTimeout(showCard, 300);
+        }
+
+        function showCard() {
+            currentItem = shuffled[currentIndex];
+            document.getElementById('russianText').textContent = currentItem.russian;
+            document.getElementById('englishText').textContent = currentItem.english;
+            document.getElementById('oppositeText').textContent = currentItem.opposite;
+            document.getElementById('examplesList').innerHTML =
+                currentItem.examples.map(e => `<div class="example-item">• ${e}</div>`).join('');
+            document.getElementById('progress').textContent =
+                `Карточка ${currentIndex + 1} из ${vocabulary.length}`;
+        }
+
+        function flipCard() {
+            document.getElementById('card').classList.toggle('flipped');
+        }
+
+        function nextCard(e) {
+            if (e) e.stopPropagation();
+            if (currentIndex < shuffled.length - 1) {
+                document.getElementById('card').classList.remove('flipped');
+                setTimeout(() => { currentIndex++; showCard(); }, 300);
+            } else {
+                if (confirm('Поздравляем! Вы просмотрели все карточки!\n\nНачать заново?')) shuffleCards();
+            }
+        }
+
+        function prevCard(e) {
+            if (e) e.stopPropagation();
+            if (currentIndex > 0) {
+                document.getElementById('card').classList.remove('flipped');
+                setTimeout(() => { currentIndex--; showCard(); }, 300);
+            }
+        }
+
+        function speakWord() {
+            if (!('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(currentItem.english);
+            u.lang = 'en-US'; u.rate = 0.85;
+            speechSynthesis.speak(u);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextCard(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); }
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); flipCard(); }
+        });
+
+        shuffleCards();
+    </script>
+</body>
+</html>
